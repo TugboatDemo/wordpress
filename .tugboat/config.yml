@@ -51,7 +51,7 @@ services:
                 wp --allow-root --path="${DOCROOT}" plugin install corona-virus-covid-19-banner
                 wp --allow-root --path="${DOCROOT}" plugin activate corona-virus-covid-19-banner
                 wp --allow-root --path="${DOCROOT}" option set orchestrated_corona_virus_banner_enabled true
-                wp --allow-root --path="${DOCROOT}" option set orchestrated_corona_virus_banner_display_type overlay
+                wp --allow-root --path="${DOCROOT}" option set orchestrated_corona_virus_banner_display_type banner
                 wp --allow-root --path="${DOCROOT}" option set orchestrated_corona_virus_banner_message_title 'Emergency COVID-19 Response'
                 wp --allow-root --path="${DOCROOT}" option set orchestrated_corona_virus_banner_message_text 'Here is an important message about our COVID-19 response.'
 
