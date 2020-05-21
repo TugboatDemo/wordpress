@@ -55,7 +55,7 @@ services:
             - /
             - /about/
             - /contact/
-            - /2018/01/23/tugboat-engines-typically-produce-680-to-3400-hp/
+            - /tugboat-engines-typically-produce-680-to-3400-hp/
 
     mysql:
         image: tugboatqa/mysql:5
