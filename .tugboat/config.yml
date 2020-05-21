@@ -28,7 +28,8 @@ services:
                 - wp --allow-root --path="${DOCROOT}" config create --dbhost=mysql --dbname=tugboat --dbuser=tugboat --dbpass=tugboat --force
 
                 # Update permalinks to remove the index.php.
-                - wp --allow-root --path="${DOCROOT}" option set permalink_structure /%year%/%monthnum%/%day%/%postname%/
+                - wp --allow-root --path="${DOCROOT}" option set permalink_structure /%postname%/
+                - wp --allow-root --path="${DOCROOT}" rewrite flush --hard
 
             update:
 
@@ -56,8 +57,9 @@ services:
 
         visualdiffs:
             - /
-            - /2018/01/23/seagoing-tugboats-or-ocean-tugboats-fall-into-four-basic-categories/
-            - /2018/01/23/tugboat-engines-typically-produce-680-to-3400-hp/
+            - /about/
+            - /contact/
+            - /tugboat-engines-typically-produce-680-to-3400-hp/
 
     mysql:
         image: tugboatqa/mysql:5
