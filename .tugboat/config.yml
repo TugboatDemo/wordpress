@@ -1,7 +1,7 @@
 services:
     php:
         default: true
-        image: tugboatqa/php:apache
+        image: tugboatqa/php:7.3-apache
         depends: mysql
         commands:
             init:
@@ -9,6 +9,9 @@ services:
                 # Install prerequisite packages
                 - apt-get update
                 - apt-get install -y rsync
+
+                # Turn on URL rewriting.
+                - a2enmod rewrite
 
                 # Install PHP mysqli extension
                 - docker-php-ext-install mysqli
@@ -23,6 +26,9 @@ services:
 
                 # Configure wordpress to work with tugboat
                 - wp --allow-root --path="${DOCROOT}" config create --dbhost=mysql --dbname=tugboat --dbuser=tugboat --dbpass=tugboat --force
+
+                # Update permalinks to remove the index.php.
+                - wp --allow-root --path="${DOCROOT}" option set permalink_structure /%year%/%monthnum%/%day%/%postname%/
 
             update:
 
@@ -39,10 +45,15 @@ services:
                 if [ "x${TUGBOAT_BASE_PREVIEW}" != "x" ]; then
                     wp --allow-root --path="${DOCROOT}" search-replace "${TUGBOAT_BASE_PREVIEW_URL_HOST}" "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
                 else
-                    wp --allow-root --path="${DOCROOT}" search-replace 'wordpress.local' "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
+                    wp --allow-root --path="${DOCROOT}" search-replace 'pr4-4gy7wboy23bse01egk4dkenyrtspulgl.tugboat.qa' "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
                 fi
                 wp --allow-root --path="${DOCROOT}" theme install slanted
                 wp --allow-root --path="${DOCROOT}" theme activate slanted
+
+        visualdiffs:
+            - /
+            - /2018/01/23/seagoing-tugboats-or-ocean-tugboats-fall-into-four-basic-categories/
+            - /2018/01/23/tugboat-engines-typically-produce-680-to-3400-hp/
 
     mysql:
         image: tugboatqa/mysql:5
