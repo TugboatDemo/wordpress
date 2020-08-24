@@ -2440,6 +2440,7 @@ h2.entry-title {
 .entry-title a {
 	color: inherit;
 	text-decoration: none;
+	font-style: italic;
 }
 
 .entry-title a:focus,
