@@ -6,7 +6,7 @@ services:
         depends: php
         commands:
             init:
-                - git clone git@github.com:TugboatDemo/headless-wordpress-frontend.git
+                - git clone https://github.com/TugboatDemo/headless-wordpress-frontend.git
             build:
                 - cd headless-wordpress-frontend && git pull
                 - echo "REACT_APP_GRAPHQL_URI=$TUGBOAT_DEFAULT_SERVICE_URL/graphql" > headless-wordpress-frontend/.env.local
