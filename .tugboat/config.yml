@@ -9,6 +9,7 @@ services:
                 - git clone https://github.com/TugboatDemo/headless-wordpress-frontend.git
             build:
                 - cd headless-wordpress-frontend && git pull
+                - cd headless-wordpress-frontend && yarn install
                 - echo "REACT_APP_GRAPHQL_URI=$TUGBOAT_DEFAULT_SERVICE_URL/graphql" > headless-wordpress-frontend/.env.local
             start:
                 - cd headless-wordpress-frontend && yarn start &
