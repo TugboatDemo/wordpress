@@ -1,4 +1,16 @@
 services:
+    node:
+        image: tugboatqa/nodejs:14
+        expose: 3000
+        checkout: true
+        depends: php
+        commands:
+            init:
+                - git clone git@github.com:TugboatDemo/headless-wordpress-frontend.git
+            build:
+                - cd headless-wordpress-frontend && git pull
+            start:
+                - cd headless-wordpress-frontend && yarn start &
     php:
         default: true
         image: tugboatqa/php:8.2-apache
