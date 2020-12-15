@@ -10,8 +10,8 @@ services:
                 - npm install -g serve
             build:
                 - cd headless-wordpress-frontend && git pull
-                - cd headless-wordpress-frontend && yarn install && yarn build
                 - echo "REACT_APP_GRAPHQL_URI=$TUGBOAT_DEFAULT_SERVICE_URL/graphql" > headless-wordpress-frontend/.env.local
+                - cd headless-wordpress-frontend && yarn install && yarn build
             start:
                 - serve -s headless-wordpress-frontend/build -l 3000 &
     php:
