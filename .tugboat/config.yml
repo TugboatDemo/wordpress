@@ -7,12 +7,13 @@ services:
         commands:
             init:
                 - git clone https://github.com/TugboatDemo/headless-wordpress-frontend.git
+                - npm install -g serve
             build:
                 - cd headless-wordpress-frontend && git pull
-                - cd headless-wordpress-frontend && yarn install
+                - cd headless-wordpress-frontend && yarn install && yarn build
                 - echo "REACT_APP_GRAPHQL_URI=$TUGBOAT_DEFAULT_SERVICE_URL/graphql" > headless-wordpress-frontend/.env.local
             start:
-                - cd headless-wordpress-frontend && yarn start &
+                - serve -s headless-wordpress-frontend/build -l 3000 &
     php:
         default: true
         image: tugboatqa/php:8.2-apache
