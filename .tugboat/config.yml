@@ -11,7 +11,8 @@ services:
                 - apt-get install -y rsync
 
                 # Turn on URL rewriting.
-                - a2enmod rewrite
+                - a2enmod rewrite substitute
+                - cp .tugboat/vhost.conf /etc/apache2/sites-available/000-default.conf
 
                 # Install PHP mysqli extension
                 - docker-php-ext-install mysqli
@@ -59,6 +60,19 @@ services:
 
         visualdiff:
             threshold: 90
+
+    punchlist:
+        image: q0rban/tugboat-punchlist
+        depends:
+            - php
+        aliases:
+            - punchlist
+        expose: 80
+        commands:
+            clone:
+                - punchlist-page-create
+            online:
+                - punchlist-page-create
 
     mysql:
         image: tugboatqa/mysql:5
