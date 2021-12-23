@@ -1,6 +1,16 @@
 services:
-    php:
+    wp-proxy:
         default: true
+        image: q0rban/wp-proxy
+        depends: php
+
+        urls:
+            - /
+            - /about/
+            - /contact/
+            - /tugboat-engines-typically-produce-680-to-3400-hp/
+    php:
+        checkout: true
         image: tugboatqa/php:7.3-apache
         depends: mysql
         commands:
@@ -40,22 +50,6 @@ services:
                 # Cleanup
                 - apt-get clean
                 - rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-            build: |
-                if [ "x${TUGBOAT_BASE_PREVIEW}" != "x" ]; then
-                    wp --allow-root --path="${DOCROOT}" search-replace "${TUGBOAT_BASE_PREVIEW_URL_HOST}" "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
-                else
-                    wp --allow-root --path="${DOCROOT}" search-replace 'main-hbpfbyk632i25rgdo9caeoo9oxs4mrtd.tugboat.qa' "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
-                fi
-
-            clone:
-              -  wp --allow-root --path="${DOCROOT}" search-replace "${TUGBOAT_BASE_PREVIEW_URL_HOST}" "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
-
-        urls:
-            - /
-            - /about/
-            - /contact/
-            - /tugboat-engines-typically-produce-680-to-3400-hp/
 
         visualdiff:
             threshold: 90
