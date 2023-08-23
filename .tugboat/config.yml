@@ -16,7 +16,6 @@ services:
         # Tugboat's visual regression testing configuration; URLs to be tested.
         urls:
             - /
-            - /sample-page/
             - /tugboat-engines-typically-produce-680-to-3400-hp/
 
         # Visual regression testing configuration; success threshold.
@@ -31,16 +30,16 @@ services:
                 - echo "alias ll='ls -la'" >> /root/.bashrc
                 - echo "export PATH=$PATH:${TUGBOAT_ROOT}/vendor/bin" >> /root/.bashrc
 
-                # Install prerequisite packages
+                # Install prerequisite packages.
                 - apt-get update
                 - apt-get install -y rsync libzip-dev
 
                 # Turn on URL rewriting.
                 - a2enmod auth_basic expires headers rewrite
 
-                # Install imagick
+                # Install imagick.
                 - apt-get install -y libmagickwand-dev
-                - pecl install imagick-beta -y
+                - pecl install imagick-beta
                 - docker-php-ext-enable imagick
 
                 # Install the PHP extensions
@@ -49,6 +48,7 @@ services:
                 # Install WordPress with composer.
                 # Note: Our composer.json file includes wp-cli.
                 - composer install --optimize-autoloader
+
                 # Set up the wp-cli instance installed with composer to be used globally.
                 - ln -snf "${TUGBOAT_ROOT}/vendor/bin/wp" /usr/local/bin
 
@@ -128,9 +128,9 @@ services:
                 # Import WordPress database example 1:
                 # The backup file is in the repository and already on Tugboat.
                 #
-                #- gunzip -c database.sql.gz > database.sql
-                #- wp --allow-root db import database.sql
-                #- rm database.sql
+                - gunzip -c database.sql.gz > database.sql
+                - wp --allow-root db import database.sql
+                - rm database.sql
 
                 ##
                 # Import WordPress database example 2:
@@ -158,7 +158,7 @@ services:
                 #   * If you are importing the database on the mysql service instead of this php service, you'll
                 #     need to run the search-replace command here on the php service, where the wp-cli is available.
                 #
-                - wp search-replace 'www.example.com' "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
+                #- wp search-replace 'www.example.com' "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
 
                 # Flush WordPress Cache
                 - wp cache flush
