@@ -2,32 +2,50 @@
     "name": "tugboatqa/wordpress",
     "description": "Wordpress Demo",
     "type": "project",
-    "autoload": {
-        "psr-4": {
-            "Tugboatqa\\Wordpress\\": "src/"
-        }
-    },
     "authors": [
         {
             "name": "KeyboardCowboy",
             "email": "chris.albrecht@lullabot.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://wpackagist.org",
+            "only": [
+                "wpackagist-plugin/*",
+                "wpackagist-theme/*"
+            ]
+        }
+    ],
     "require": {
         "php": ">=8.0",
-        "roots/wordpress": "6.2.2"
+        "composer/installers": "^1.3.0",
+        "cweagans/composer-patches": "^1.7",
+        "roots/wordpress": "^6.3",
+        "wpackagist-plugin/advanced-custom-fields": "^6.2",
+        "wp-cli/wp-cli-bundle": "^2.8",
+        "wpackagist-theme/twentytwenty": "^2.2"
     },
     "extra": {
-        "wordpress-install-dir": "docroot"
+        "wordpress-install-dir": "docroot/wp",
+        "installer-paths": {
+            "docroot/wp-content/plugins/{$name}/": [
+                "type:wordpress-plugin"
+            ],
+            "docroot/wp-content/themes/{$name}/": [
+                "type:wordpress-theme"
+            ]
+        }
     },
     "config": {
         "allow-plugins": {
+            "cweagans/composer-patches": true,
+            "composer/installers": true,
             "roots/wordpress-core-installer": true
         }
     },
     "scripts": {
-        "post-install-cmd": [
-            "cd docroot; ln -sf ../wp-content .; ln -sf ../wp-config.php"
-        ]
+        "post-install-cmd": []
     }
 }
