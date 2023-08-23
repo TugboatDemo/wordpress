@@ -35,10 +35,7 @@ services:
                 - apt-get install -y rsync libzip-dev libmagickwand-dev
 
                 # Turn on URL rewriting.
-                - a2enmod auth_basic expires headers rewrite
-
-                # Install imagick.
-                - docker-php-ext-enable imagick
+                - a2enmod expires headers rewrite
 
                 # Install the PHP extensions
                 - docker-php-ext-install mysqli exif zip
