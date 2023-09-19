@@ -3,9 +3,27 @@
 *.swp
 *.swo
 .vagrant
+.idea
 
-# Local Vagrant config file
-/Vagrant.local.yml
+# Ignore Wordpress core, contrib projects, and Composer's vendor dir.
+vendor
+!/docroot
+/docroot/*
+!/docroot/wp-content/
+/docroot/wp-content/*
+!/docroot/wp-content/mu-plugins/
+/docroot/wp-content/mu-plugins/*
+!/docroot/wp-content/plugins/
+/docroot/wp-content/plugins/*
+!/docroot/wp-content/themes/
+/docroot/wp-content/themes/*
 
-# Local wordpress config
-/docroot/wp-config.local.php
+# Track our custom functionality
+!/docroot/index.php
+!/docroot/wp-config.php
+!/docroot/wp-config.local-example.php
+!/docroot/wp-content/plugins/my-custom-plugin/
+!/docroot/wp-content/themes/my-custom-theme/
+
+ # Tugboat Example Specific. Don't ignore this in your project.
+ /composer.lock
