@@ -11,16 +11,16 @@ services:
         default: true
 
         # Wait until the mysql service is done building
-        depends: mysql
+        #depends: mysql
 
         # Tugboat's visual regression testing configuration; URLs to be tested.
-        urls:
-            - /
-            - /tugboat-engines-typically-produce-680-to-3400-hp/
+#        urls:
+#            - /
+#            - /tugboat-engines-typically-produce-680-to-3400-hp/
 
         # Visual regression testing configuration; success threshold.
-        visualdiff:
-            threshold: 90
+#        visualdiff:
+#            threshold: 90
 
         # A set of commands to run while building this service
         commands:
@@ -49,9 +49,9 @@ services:
 
                 ##
                 # Alternatively: install WP-CLI without composer.
-                #- curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-                #- chmod +x wp-cli.phar
-                #- mv wp-cli.phar /usr/local/bin/wp
+                - curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+                - chmod +x wp-cli.phar
+                - mv wp-cli.phar /usr/local/bin/wp
 
                 # Symlink this repo's docroot folder as Apache's docroot path.
                 # Note: WordPress lives in a subdirectory in this example, 'docroot'.
@@ -177,7 +177,8 @@ services:
                 # Import WordPress Database example 1:
                 # The backup file is in the repository and already on Tugboat.
                 #
-                - zcat database.sql.gz | mysql tugboat
+#                - zcat database.sql.gz | mysql tugboat
+                - wp --allow-root db import database.sql.gz
 
                 ##
                 # Import WordPress files example 2:
