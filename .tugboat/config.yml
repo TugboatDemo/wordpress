@@ -1,188 +1,68 @@
 services:
-    # What to call the service hosting the site.
     php:
-        # Use PHP 8.1 with Apache to serve the WordPress site; this syntax pulls in the latest version of PHP 8.1
-        image: tugboatqa/php:8.1-apache
-
-        # Set this as the default service. This does a few things
-        #   1. Clones the git repository into the service container
-        #   2. Exposes port 80 to the Tugboat HTTP proxy
-        #   3. Routes requests to the preview URL to this service
         default: true
-
-        # Wait until the mysql service is done building
+        image: tugboatqa/php:7.3-apache
         depends: mysql
-
-        # Tugboat's visual regression testing configuration; URLs to be tested.
-        urls:
-            - /
-            - /tugboat-engines-typically-produce-680-to-3400-hp/
-
-        # Visual regression testing configuration; success threshold.
-        visualdiff:
-            threshold: 90
-
-        # A set of commands to run while building this service
         commands:
-            # Commands that set up the basic preview infrastructure
             init:
-                # Set some helpful aliases for the cli and add the composer bin to the PATH.
-                - echo "alias ll='ls -la'" >> /root/.bashrc
-                - echo "export PATH=$PATH:${TUGBOAT_ROOT}/vendor/bin" >> /root/.bashrc
 
-                # Install prerequisite packages.
+                # Install prerequisite packages
                 - apt-get update
-                - apt-get install -y rsync libzip-dev libmagickwand-dev
+                - apt-get install -y rsync
 
                 # Turn on URL rewriting.
-                - a2enmod expires headers rewrite
+                - a2enmod rewrite
 
-                # Install the PHP extensions
-                - docker-php-ext-install mysqli exif zip
+                # Install PHP mysqli extension
+                - docker-php-ext-install mysqli
 
-                # Install WordPress with composer.
-                # Note: Our composer.json file includes wp-cli.
-                - composer install --optimize-autoloader
+                # Install wp-cli
+                - curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+                - chmod +x wp-cli.phar
+                - mv wp-cli.phar /usr/local/bin/wp
 
-                # Set up the wp-cli instance installed with composer to be used globally.
-                - ln -snf "${TUGBOAT_ROOT}/vendor/bin/wp" /usr/local/bin
-
-                ##
-                # Alternatively: install WP-CLI without composer.
-                #- curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-                #- chmod +x wp-cli.phar
-                #- mv wp-cli.phar /usr/local/bin/wp
-
-                # Symlink this repo's docroot folder as Apache's docroot path.
-                # Note: WordPress lives in a subdirectory in this example, 'docroot'.
+                # Link the docroot
                 - ln -snf "${TUGBOAT_ROOT}/docroot" "${DOCROOT}"
 
-                # Place wp-config.php and .htaccess files we want to use for Tugboat.
-                - cp ${TUGBOAT_ROOT}/.tugboat/wp-config.tugboat.php ${DOCROOT}/wp-config.local.php
-                - cp ${TUGBOAT_ROOT}/.tugboat/.htaccess ${DOCROOT}/.htaccess
+                # Configure wordpress to work with tugboat
+                - wp --allow-root --path="${DOCROOT}" config create --dbhost=mysql --dbname=tugboat --dbuser=tugboat --dbpass=tugboat --force
 
+                # Update permalinks to remove the index.php.
+                - wp --allow-root --path="${DOCROOT}" option set permalink_structure /%postname%/
+                - wp --allow-root --path="${DOCROOT}" rewrite flush --hard
 
-            # Phase 2 (update): Import files, database, or any other assets that your
-            # website needs to run.
-            # When you refresh a Tugboat Preview, the process starts here, skipping `init`.
             update:
-                ##################################
-                # Import WordPress files (uploads).
-                ##################################
 
-                ##
-                # Import WordPress files example 1:
-                # The backup file is in the repository and already on Tugboat.
-                #
+                # Import uploads
                 - tar -C /tmp -zxf uploads.tar.gz
-                - rsync -avz --delete /tmp/uploads/ "${TUGBOAT_ROOT}/docroot/wp-content/uploads/"
-
-                ##
-                # Import WordPress files example 2:
-                # The backup file is in a remote location and needs to be downloaded.
-                #
-                #- curl -O https://github.com/TugboatDemo/wordpress/raw/main/uploads.tar.gz
-                #- tar -C /tmp -zxf uploads.tar.gz
-                #- rsync -avz --delete /tmp/uploads/ "${TUGBOAT_ROOT}/docroot/wp-content/uploads/"
-
-                ##
-                # Import WordPress files example 3:
-                # Sync files directly from production using rsync and SSH details similar to our wp cli alias.
-                #
-                # Note: Using this approach will require adding a Private SSH key as an environment variable in Tugboat.
-                #       In this example, that environment variable is named "MY_PRODUCTION_SSH_KEY"
-                #
-                #- echo "${MY_PRODUCTION_SSH_KEY}" > ~/.ssh/production_ssh_key
-                #- chmod 600 ~/.ssh/production_ssh_key
-                #
-                # Perform the rsync to place WordPress uploads into place.
-                #- rsync \
-                #  --archive \
-                #  --verbose \
-                #  # Change SSH Port here if required.
-                #  -e "ssh -p 22 -o ConnectTimeout=120" \
-                #  # Modify this line to exclude some folders.
-                #  # https://linuxize.com/post/how-to-exclude-files-and-directories-with-rsync/#exclude-multiple-files-or-directories
-                #  --exclude={'*.zip','*.gz', '*.tgz'} \
-                #  # Production SSH connection and path to WordPress files.
-                #  example@example.com:/var/www/html/docroot/wp-content/uploads/ \
-                #  # Where to place the files locally.
-                #  "${DOCROOT}/wp-content/uploads"
-
-                # After placing the files, fix file ownership and harden permissions.
-                - chgrp -R www-data "${DOCROOT}/wp-content/uploads"
-                - find "${DOCROOT}/wp-content/uploads" -type d -exec chmod 2775 {} \;
-                - find "${DOCROOT}/wp-content/uploads" -type f -exec chmod 0664 {} \;
-
-                ##################################
-                # (Optional) Import WordPress database with the wp-cli.
-                ##################################
-                # If we preferred to use the wp-cli to import the database, we would do it here.
-
-                ##
-                # Import WordPress database example 1:
-                # The backup file is in the repository and already on Tugboat.
-                #
-                - gunzip -c database.sql.gz > database.sql
-                - wp --allow-root db import database.sql
-                - rm database.sql
-
-                ##
-                # Import WordPress database example 2:
-                # Using wp-cli and the alias @production, found in our wp-cli.yml file.
-                #
-                # Note: This also requires a Private SSH key has been placed on the Tugboat instance.
-                #       See the "Import files" example that uses rsync over SSH.
-                #
-                #- wp --allow-root @production db export - > prod.sql
-                #- wp --allow-root db import prod.sql
-                #- rm prod.sql
-
-                ##
-                # Import WordPress database example 3:
-                # Using wp-cli without an alias.
-                #
-                #- wp --allow-root --ssh=example@www.example.com:22/var/www/html/docroot/wp  db export - > prod.sql
-                #- wp --allow-root db import prod.sql
-                #- rm prod.sql
-
-                ##
-                # (Optional) After database import, replace the site's domain throughout the database.
-                # Notes:
-                #   * Whether you need this step depends on whether WordPress is saving its domain to the database.
-                #   * If you are importing the database on the mysql service instead of this php service, you'll
-                #     need to run the search-replace command here on the php service, where the wp-cli is available.
-                #
-                #- wp search-replace 'www.example.com' "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
-
-                # Flush WordPress Cache
-                - wp cache flush
+                - rsync -av --delete /tmp/uploads/ "${TUGBOAT_ROOT}/docroot/wp-content/uploads/"
 
                 # Cleanup
                 - apt-get clean
                 - rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-            build: []
+            build: |
+                if [ "x${TUGBOAT_BASE_PREVIEW}" != "x" ]; then
+                    wp --allow-root --path="${DOCROOT}" search-replace "${TUGBOAT_BASE_PREVIEW_URL_HOST}" "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
+                else
+                    wp --allow-root --path="${DOCROOT}" search-replace 'main-hbpfbyk632i25rgdo9caeoo9oxs4mrtd.tugboat.qa' "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
+                fi
 
-            clone: []
+            clone:
+              -  wp --allow-root --path="${DOCROOT}" search-replace "${TUGBOAT_BASE_PREVIEW_URL_HOST}" "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
 
-    # What to call the service hosting MySQL. This name also acts as the
-    # hostname to access the service by from the php service.
+        urls:
+            - /
+            - /about/
+            - /contact/
+            - /tugboat-engines-typically-produce-680-to-3400-hp/
+
+        visualdiff:
+            threshold: 90
+
     mysql:
-        image: tugboatqa/mysql:5-debian
+        image: tugboatqa/mysql:5
         checkout: true
         commands:
             update:
-                ##
-                # Import WordPress Database example 1:
-                # The backup file is in the repository and already on Tugboat.
-                #
                 - zcat database.sql.gz | mysql tugboat
-
-                ##
-                # Import WordPress files example 2:
-                # The backup file is in a remote location and needs to be downloaded.
-                #
-                #- curl -O https://github.com/TugboatDemo/wordpress/raw/main/database.sql.gz
-                #- zcat database.sql.gz | mysql tugboat
-                #- rm database.sql.gz

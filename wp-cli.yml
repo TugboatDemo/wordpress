@@ -1,9 +1,0 @@
-path: docroot/wp
-
-# Example WP CLI alias for accessing remote WordPress site through SSH.
-# This is used in the Tugboat config.yml examples.
-# Note: Using this approach will require adding a Private SSH key as an environment variable in Tugboat.
-'@production':
-  ssh: example@www.example.com
-  port: 22
-  path: /var/www/html/docroot/wp
