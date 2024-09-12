@@ -1,0 +1,3 @@
+backend_uri: http://php
+sites:
+  main-hbpfbyk632i25rgdo9caeoo9oxs4mrtd.tugboat.qa: ${TUGBOAT_DEFAULT_SERVICE_URL_HOST}
