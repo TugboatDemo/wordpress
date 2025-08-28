@@ -1,4 +1,19 @@
 services:
+    node:
+        image: tugboatqa/node:14
+        expose: 3000
+        checkout: true
+        depends: php
+        commands:
+            init:
+                - git clone https://github.com/TugboatDemo/headless-wordpress-frontend.git
+                - npm install -g serve
+            build:
+                - cd headless-wordpress-frontend && git pull
+                - echo "REACT_APP_GRAPHQL_URI=$TUGBOAT_DEFAULT_SERVICE_URL/graphql" > headless-wordpress-frontend/.env.local
+                - cd headless-wordpress-frontend && yarn install && yarn build
+            start:
+                - serve -s headless-wordpress-frontend/build -l 3000 &
     php:
         default: true
         image: tugboatqa/php:8.2-apache
@@ -49,6 +64,7 @@ services:
                   else
                     wp --allow-root --path="${DOCROOT}" search-replace "${TUGBOAT_BASE_PREVIEW_URL_HOST}" "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
                   fi
+                - wp --allow-root --path="${DOCROOT}" plugin install wp-graphql --activate
 
             clone:
                 - wp --allow-root --path="${DOCROOT}" search-replace "${TUGBOAT_BASE_PREVIEW_URL_HOST}" "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
