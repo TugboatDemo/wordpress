@@ -9,6 +9,7 @@ services:
                 - git clone git@github.com:TugboatDemo/headless-wordpress-frontend.git
             build:
                 - cd headless-wordpress-frontend && git pull
+                - echo "REACT_APP_GRAPHQL_URI=$TUGBOAT_DEFAULT_SERVICE_URL/graphql" > headless-wordpress-frontend/.env.local
             start:
                 - cd headless-wordpress-frontend && yarn start &
     php:
@@ -60,6 +61,7 @@ services:
                   else
                     wp --allow-root --path="${DOCROOT}" search-replace "${TUGBOAT_BASE_PREVIEW_URL_HOST}" "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
                   fi
+                - wp --allow-root --path="${DOCROOT}" plugin install wp-graphql --activate
 
             clone:
                 - wp --allow-root --path="${DOCROOT}" search-replace "${TUGBOAT_BASE_PREVIEW_URL_HOST}" "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
