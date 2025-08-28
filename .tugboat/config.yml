@@ -43,7 +43,8 @@ services:
 
             build:
                 - |
-                  if [[ -z "${TUGBOAT_BASE_PREVIEW}" ]]; then
+                  set -e
+                  if test -z "${TUGBOAT_BASE_PREVIEW}"; then
                     wp --allow-root --path="${DOCROOT}" search-replace example.com "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
                   else
                     wp --allow-root --path="${DOCROOT}" search-replace "${TUGBOAT_BASE_PREVIEW_URL_HOST}" "${TUGBOAT_SERVICE_URL_HOST}" --skip-columns=guid
