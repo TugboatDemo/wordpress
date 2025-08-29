@@ -62,6 +62,19 @@ services:
         visualdiff:
             threshold: 90
 
+    punchlist:
+        image: q0rban/tugboat-punchlist
+        depends:
+            - php
+        aliases:
+            - punchlist
+        expose: 80
+        commands:
+            clone:
+                - punchlist-page-create
+            online:
+                - punchlist-page-create
+
     mysql:
         image: tugboatqa/mysql:5
         checkout: true
